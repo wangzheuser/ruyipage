@@ -98,3 +98,8 @@ class IncorrectURLError(RuyiPageError):
 class NetworkInterceptError(RuyiPageError):
     """网络拦截失败"""
     pass
+
+
+class DebuggerError(RuyiPageError):
+    """DevTools 调试通道（RDP）错误"""
+    pass

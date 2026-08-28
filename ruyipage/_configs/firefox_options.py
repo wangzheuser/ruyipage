@@ -9,6 +9,7 @@ from urllib.parse import unquote, urlsplit
 
 
 DEFAULT_REMOTE_DEBUGGING_PORT = 9222
+DEFAULT_DEBUGGER_PORT = 6000
 DEFAULT_RANDOM_PORT_START = 10000
 DEFAULT_RANDOM_PORT_END = 65535
 UINT32_MAX = (2**32) - 1
@@ -114,6 +115,7 @@ class FirefoxOptions(object):
         self._touch_fallback_profile = "mobile"
         self._private_mode = False  # Firefox 私密浏览模式
         self._user_prompt_handler = None  # session.UserPromptHandler
+        self._debugger_port = None  # RDP 断点调试端口
         self._xpath_picker_enabled = False  # 页面 XPath 选择浮窗
         self._action_visual_enabled = False  # 鼠标行为可视化调试
         self._human_algorithm = "bezier"  # 拟人鼠标轨迹算法
@@ -220,6 +222,11 @@ class FirefoxOptions(object):
     def fpfile(self):
         """指纹配置文件路径"""
         return self._fpfile
+
+    @property
+    def debugger_port(self):
+        """RDP 断点调试端口；未启用时为 None。"""
+        return self._debugger_port
 
     @property
     def touch_fallback_enabled(self):
@@ -415,6 +422,47 @@ class FirefoxOptions(object):
             - 教程和快速开始里希望用更直白的名字
         """
         return self.set_profile(path)
+
+    def enable_debugger(self, on_off=True, port=None):
+        """启用 JS 断点调试通道（``page.debugger``）。
+
+        断点、单步这类能力不在 WebDriver BiDi 规范内，需要额外启动 Firefox
+        的 DevTools server（RDP）。本方法负责写入所需 pref 并添加启动参数。
+
+        Args:
+            on_off: ``True`` 启用，``False`` 关闭。
+            port: RDP 监听端口，默认 6000。
+
+        Returns:
+            self
+
+        Note:
+            RDP 端口只监听本机回环地址（``devtools.debugger.force-local``
+            默认为真）。``devtools.debugger.prompt-connection`` 被置为 False，
+            否则每次连接都会弹出授权对话框而无法自动化。
+        """
+        if not on_off:
+            self._debugger_port = None
+            self.remove_argument("--start-debugger-server")
+            for key in (
+                "devtools.debugger.remote-enabled",
+                "devtools.chrome.enabled",
+                "devtools.debugger.prompt-connection",
+                "devtools.debugger.remote-port",
+            ):
+                self._preferences.pop(key, None)
+            return self
+
+        port = int(port or DEFAULT_DEBUGGER_PORT)
+        self._debugger_port = port
+        self.set_pref("devtools.debugger.remote-enabled", True)
+        self.set_pref("devtools.chrome.enabled", True)
+        self.set_pref("devtools.debugger.prompt-connection", False)
+        self.set_pref("devtools.debugger.remote-port", port)
+        # 裸标志会读取 devtools.debugger.remote-port；带值形式要求参数是独立
+        # 的 argv token，与本类拼接 "--flag=value" 的方式不兼容。
+        self.set_argument("--start-debugger-server")
+        return self
 
     def set_argument(self, arg, value=None):
         """添加启动参数

@@ -132,6 +132,7 @@ class FirefoxBase(BasePage):
         self._local_storage = None
         self._session_storage = None
         self._console = None
+        self._debugger = None
         self._interceptor = None
         self._capture = None
         self._network_manager = None
@@ -3564,6 +3565,19 @@ class FirefoxBase(BasePage):
 
             self._console = ConsoleListener(self)
         return self._console
+
+    @property
+    def debugger(self) -> "Debugger":
+        """JS 断点调试器
+
+        需要先在 options 上调用 ``enable_debugger()``，再调用
+        ``page.debugger.start()`` 建立调试通道。
+        """
+        if self._debugger is None:
+            from .._units.debugger import Debugger
+
+            self._debugger = Debugger(self)
+        return self._debugger
 
     @property
     def intercept(self) -> "Interceptor":

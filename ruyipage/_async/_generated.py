@@ -3,7 +3,7 @@
 # │ WARNING: 此文件由 scripts/generate_async_api.py 自动生成          │
 # │ 请勿手动编辑！修改后请重新运行生成器：                               │
 # │   python scripts/generate_async_api.py                          │
-# │ 生成时间: 2026-08-25 01:34:17                                        │
+# │ 生成时间: 2026-08-28 22:53:25                                        │
 # └──────────────────────────────────────────────────────────────────┘
 
 from .greenlet_bridge import greenlet_spawn as _bridge_greenlet_spawn
@@ -296,6 +296,10 @@ class AsyncFirefoxBase(AsyncFirefoxBaseMixin):
         if "window" not in self._unit_cache:
             self._unit_cache["window"] = AsyncUnitProxy(self._sync.window, owner=self)
         return self._unit_cache["window"]
+
+    async def get_debugger(self):
+        _r = await greenlet_spawn(lambda: self._sync.debugger)
+        return _wrap_async_result(_r, self)
 
     async def accept_alert(self, text=None, timeout=3):
         _r = await greenlet_spawn(self._sync.accept_alert, text=text, timeout=timeout)
