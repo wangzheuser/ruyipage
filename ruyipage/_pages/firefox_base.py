@@ -5443,13 +5443,17 @@ class FirefoxBase(BasePage):
             - 快速调整页面可视区域
             - 与移动端模拟配合设置 viewport + DPR
         """
+        kwargs = {
+            "width": width,
+            "height": height,
+            "timeout": timeout,
+        }
+        if device_pixel_ratio is not None:
+            kwargs["device_pixel_ratio"] = device_pixel_ratio
         bidi_context.set_viewport(
             self._driver._browser_driver,
             self._context_id,
-            width=width,
-            height=height,
-            device_pixel_ratio=device_pixel_ratio,
-            timeout=timeout,
+            **kwargs,
         )
         return self
 
@@ -6021,12 +6025,12 @@ class FirefoxBase(BasePage):
         self.emulation.set_locale(locales)
         return self
 
-    def set_screen_orientation(self, orientation_type, angle=0):
+    def set_screen_orientation(self, orientation_type, angle=None):
         """设置屏幕方向 (FF144+)
 
         Args:
             orientation_type: 'portrait-primary'/'landscape-primary' 等
-            angle: 0/90/180/270
+            angle: 可选的 0/90/180/270，用于推断并校验 natural orientation。
 
         Returns:
             self
@@ -6112,6 +6116,7 @@ class FirefoxBase(BasePage):
             context=self._context_id,
             expression=expression,
             await_promise=await_promise,
+            result_ownership="root",
         )
         return ScriptResult(result)
 

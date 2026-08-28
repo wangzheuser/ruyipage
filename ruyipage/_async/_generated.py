@@ -3,7 +3,7 @@
 # │ WARNING: 此文件由 scripts/generate_async_api.py 自动生成          │
 # │ 请勿手动编辑！修改后请重新运行生成器：                               │
 # │   python scripts/generate_async_api.py                          │
-# │ 生成时间: 2026-08-02 23:52:54                                        │
+# │ 生成时间: 2026-08-25 01:34:17                                        │
 # └──────────────────────────────────────────────────────────────────┘
 
 from .greenlet_bridge import greenlet_spawn as _bridge_greenlet_spawn
@@ -477,7 +477,7 @@ class AsyncFirefoxBase(AsyncFirefoxBaseMixin):
         _r = await greenlet_spawn(self._sync.set_prompt_handler, alert=alert, confirm=confirm, prompt=prompt, default=default, prompt_text=prompt_text)
         return _wrap_async_result(_r, self)
 
-    async def set_screen_orientation(self, orientation_type, angle=0):
+    async def set_screen_orientation(self, orientation_type, angle=None):
         await greenlet_spawn(self._sync.set_screen_orientation, orientation_type, angle=angle)
         return self
 
