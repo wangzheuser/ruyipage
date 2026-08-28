@@ -3,8 +3,9 @@
 
 from pathlib import Path
 import os
-import tempfile
 import shutil
+import tempfile
+import time
 
 import pytest
 
@@ -165,6 +166,20 @@ def launched_page():
         pass
 
 
+def _rmtree_with_retry(path, attempts=5, delay=0.4):
+    """删除目录并重试。
+
+    Windows 上 Firefox 退出后句柄释放有延迟，单次 rmtree 会静默失败并留下残目录。
+    """
+    for index in range(attempts):
+        shutil.rmtree(path, ignore_errors=True)
+        if not os.path.exists(path):
+            return True
+        if index < attempts - 1:
+            time.sleep(delay)
+    return False
+
+
 @pytest.fixture
 def temp_user_dir():
     """提供临时 user_dir / profile 目录。"""
@@ -172,7 +187,7 @@ def temp_user_dir():
     try:
         yield path
     finally:
-        shutil.rmtree(path, ignore_errors=True)
+        _rmtree_with_retry(path)
 
 
 @pytest.fixture

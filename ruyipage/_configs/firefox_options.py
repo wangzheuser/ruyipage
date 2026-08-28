@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Firefox 浏览器启动配置"""
 
+import copy as _copy
 import os
 import re
 import sys
@@ -641,6 +642,15 @@ class FirefoxOptions(object):
         if interval is not None:
             self._retry_interval = interval
         return self
+
+    def copy(self):
+        """返回一份独立副本。
+
+        启动流程会把解析出的端口、profile 目录和 session fpfile 写回选项对象。
+        若多个浏览器实例共用同一个对象，这些写回会互相覆盖，导致并发启动的
+        Firefox 落到同一个 profile 目录上。
+        """
+        return _copy.deepcopy(self)
 
     def set_fpfile(self, path):
         """设置指纹配置文件路径

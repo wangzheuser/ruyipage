@@ -70,6 +70,16 @@ class NoRectError(RuyiPageError):
     pass
 
 
+class ElementGeometryError(RuyiPageError):
+    """无法从浏览器读取元素几何信息
+
+    与 :class:`NoRectError` 的区别：``NoRectError`` 表示元素确实没有可视区域，
+    本异常表示读取动作自身失败（BiDi 未返回结果或对象序列化被截断），
+    此时元素的真实尺寸未知。
+    """
+    pass
+
+
 class CanNotClickError(RuyiPageError):
     """元素不可点击"""
     pass
